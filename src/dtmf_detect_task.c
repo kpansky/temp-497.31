@@ -10,6 +10,8 @@
 #include "dtmf_detect_task.h"
 #include "dtmf_data.h"
 
+static struct DTMFSamples_t s;
+
 void vDTMFDetectTask( void *pvParameters ) {
 
 	struct DTMFDetectTaskParam_t* params = (struct DTMFDetectTaskParam_t *)pvParameters;
@@ -18,12 +20,12 @@ void vDTMFDetectTask( void *pvParameters ) {
 
 	for( ;; )
 	{
-		struct DTMFSamples_t s;
 		xQueueReceive( params->sampQ, &s, portMAX_DELAY );
 
 		/* Do real work here */
 		struct DTMFResult_t r;
+		vPrintString( "DTMF Detector working\n" );
 
-		xQueueSend( params->resultQ, &r, 0 );
+		xQueueSendToBack( params->resultQ, &r, portMAX_DELAY );
 	}
 }

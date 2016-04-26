@@ -13,39 +13,37 @@
 #include "dtmf_detect_task.h"
 #include "dtmf_data.h"
 
-/* The task functions. */
-void vTask2( void *pvParameters );
-
 /*-----------------------------------------------------------*/
+
+static QueueHandle_t sampQ;
+static QueueHandle_t resultQ;
+static struct TestBenchTaskParam_t TestBenchTaskParam;
+static struct DTMFDetectTaskParam_t DTMFDetectTaskParam;
 
 int main( void )
 {
 	/* Init the semi-hosting. */
 	printf( "\n" );
 
-	QueueHandle_t sampQ;
-	QueueHandle_t resultQ;
 	sampQ = xQueueCreate( 2, sizeof(struct DTMFSamples_t) );
 	resultQ = xQueueCreate( 2, sizeof(struct DTMFResult_t) );
 
-	struct TestBenchTaskParam_t TestBenchTaskParam;
 	TestBenchTaskParam.sampQ = sampQ;
 	TestBenchTaskParam.resultQ = resultQ;
 	xTaskCreate(	vTestBenchTask,
-					TestBenchTaskName,
-					TestBenchTaskStackSz,
-					&TestBenchTaskParam,
-					1,			/* This task will run at priority 1. */
+					"tTB",
+					500,
+					(void *)&TestBenchTaskParam,
+					2,
 					NULL );
 
-	struct DTMFDetectTaskParam_t DTMFDetectTaskParam;
 	DTMFDetectTaskParam.sampQ = sampQ;
 	DTMFDetectTaskParam.resultQ = resultQ;
 	xTaskCreate(	vDTMFDetectTask,
-					DTMFDetectTaskName,
-					DTMFDetectTaskStackSz,
-					&DTMFDetectTaskParam,
-					2,			/* This task will run at priority 2. */
+					"tDetect",
+					500,
+					(void *)&DTMFDetectTaskParam,
+					2,
 					NULL );
 
 	/* Start the scheduler so our tasks start executing. */

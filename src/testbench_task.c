@@ -9,7 +9,7 @@
 #include "testbench_task.h"
 #include "dtmf_data.h"
 
-
+static struct DTMFSamples_t s;
 
 void vTestBenchTask( void *pvParameters ) {
 
@@ -20,20 +20,19 @@ void vTestBenchTask( void *pvParameters ) {
 	for( ;; )
 	{
 		/* Do real work here */
-		struct DTMFSamples_t s;
 		int ii;
 		for (ii=0; ii<DTMFSampleSize; ii++) {
 			s.samp[ii] = 0;
 		}
 
 		/* Pass the synthetic data to the detector */
-		vPrintString( "Testbench sent data" );
-		xQueueSend( params->sampQ, &s, portMAX_DELAY );
+		vPrintString( "Testbench sent data\n" );
+		xQueueSendToBack( params->sampQ, &s, portMAX_DELAY );
 
 
 		struct DTMFResult_t r;
 		xQueueReceive( params->resultQ, &r, portMAX_DELAY );
-		vPrintString( "Testbench received results" );
+		vPrintString( "Testbench received results\n" );
 
 		/* Do real work here */
 	}

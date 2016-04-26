@@ -10,4 +10,5 @@ struct DTMFSamples_t {
 struct DTMFResult_t {
 	int16_t code;
 };
+
 #endif

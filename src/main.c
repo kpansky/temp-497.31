@@ -25,8 +25,8 @@ int main( void )
 	/* Init the semi-hosting. */
 	printf( "\n" );
 
-	sampQ = xQueueCreate( 2, sizeof(struct DTMFSamples_t) );
-	resultQ = xQueueCreate( 2, sizeof(struct DTMFResult_t) );
+	sampQ = xQueueCreate( 1, sizeof(struct DTMFSamples_t) );
+	resultQ = xQueueCreate( 1, sizeof(struct DTMFResult_t) );
 
 	TestBenchTaskParam.sampQ = sampQ;
 	TestBenchTaskParam.resultQ = resultQ;

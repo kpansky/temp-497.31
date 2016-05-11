@@ -31,8 +31,6 @@ void vDTMFDetectTask( void *pvParameters ) {
 	{
 		xQueueReceive( params->sampQ, &s, portMAX_DELAY );
 
-		vPrintString( "DTMF Detector working\n" );
-
 		int ii;
 		for (ii=0; ii<DTMFSampleSize; ii++) {
 			cs[ii].Re = (float)s.samp[ii] / 16384.0f; // Need to convert this to float
@@ -56,31 +54,23 @@ void pick_peaks(complex *cs, float threshold, int16_t *toneA, int16_t *toneB) {
 	/* check low bins for power */
 	if (spec_power(cs[DTMF_L0_BIN]) >= threshold) {
 		*toneA = DTMF_L0_FREQ;
-		vPrintString( "Detected tone L0\n" );
 	} else if (spec_power(cs[DTMF_L1_BIN]) >= threshold) {
 		*toneA = DTMF_L1_FREQ;
-		vPrintString( "Detected tone L1\n" );
 	} else if (spec_power(cs[DTMF_L2_BIN]) >= threshold) {
 		*toneA = DTMF_L2_FREQ;
-		vPrintString( "Detected tone L2\n" );
 	} else if (spec_power(cs[DTMF_L3_BIN]) >= threshold) {
 		*toneA = DTMF_L3_FREQ;
-		vPrintString( "Detected tone L3\n" );
 	}
 
 	/* check high bins for power */
 	if (spec_power(cs[DTMF_H0_BIN]) >= threshold) {
 		*toneB = DTMF_H0_FREQ;
-		vPrintString( "Detected tone H0\n" );
 	} else if (spec_power(cs[DTMF_H1_BIN]) >= threshold) {
 		*toneB = DTMF_H1_FREQ;
-		vPrintString( "Detected tone H1\n" );
 	} else if (spec_power(cs[DTMF_H2_BIN]) >= threshold) {
 		*toneB = DTMF_H2_FREQ;
-		vPrintString( "Detected tone H2\n" );
 	} else if (spec_power(cs[DTMF_H3_BIN]) >= threshold) {
 		*toneB = DTMF_H3_FREQ;
-		vPrintString( "Detected tone H3\n" );
 	}
 }
 

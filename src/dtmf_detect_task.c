@@ -18,7 +18,7 @@ complex cs[DTMFSampleSize];
 
 #define spec_power(x) (sqrt((x.Re * x.Re) + (x.Im * x.Im)))
 void pick_peaks(complex *cs, float thresh, int16_t *toneA, int16_t *toneB);
-int16_t decode_tones(int16_t toneA, int16_t toneB);
+int8_t decode_tones(int16_t toneA, int16_t toneB);
 
 void vDTMFDetectTask( void *pvParameters ) {
 
@@ -84,6 +84,55 @@ void pick_peaks(complex *cs, float threshold, int16_t *toneA, int16_t *toneB) {
 	}
 }
 
-int16_t decode_tones(int16_t toneA, int16_t toneB) {
-	return -1;
+int8_t decode_tones(int16_t toneA, int16_t toneB) {
+	if ((toneA == DTMF_L0_FREQ) && (toneB == DTMF_H0_FREQ)) {
+		return '1';
+	}
+	if ((toneA == DTMF_L0_FREQ) && (toneB == DTMF_H1_FREQ)) {
+		return '2';
+	}
+	if ((toneA == DTMF_L0_FREQ) && (toneB == DTMF_H2_FREQ)) {
+		return '3';
+	}
+	if ((toneA == DTMF_L0_FREQ) && (toneB == DTMF_H3_FREQ)) {
+		return 'A';
+	}
+	if ((toneA == DTMF_L1_FREQ) && (toneB == DTMF_H0_FREQ)) {
+		return '4';
+	}
+	if ((toneA == DTMF_L1_FREQ) && (toneB == DTMF_H1_FREQ)) {
+		return '5';
+	}
+	if ((toneA == DTMF_L1_FREQ) && (toneB == DTMF_H2_FREQ)) {
+		return '6';
+	}
+	if ((toneA == DTMF_L1_FREQ) && (toneB == DTMF_H3_FREQ)) {
+		return 'B';
+	}
+	if ((toneA == DTMF_L2_FREQ) && (toneB == DTMF_H0_FREQ)) {
+		return '7';
+	}
+	if ((toneA == DTMF_L2_FREQ) && (toneB == DTMF_H1_FREQ)) {
+		return '8';
+	}
+	if ((toneA == DTMF_L2_FREQ) && (toneB == DTMF_H2_FREQ)) {
+		return '9';
+	}
+	if ((toneA == DTMF_L2_FREQ) && (toneB == DTMF_H3_FREQ)) {
+		return 'C';
+	}
+	if ((toneA == DTMF_L3_FREQ) && (toneB == DTMF_H0_FREQ)) {
+		return '*';
+	}
+	if ((toneA == DTMF_L3_FREQ) && (toneB == DTMF_H1_FREQ)) {
+		return '0';
+	}
+	if ((toneA == DTMF_L3_FREQ) && (toneB == DTMF_H2_FREQ)) {
+		return '#';
+	}
+	if ((toneA == DTMF_L3_FREQ) && (toneB == DTMF_H3_FREQ)) {
+		return 'D';
+	}
+
+	return ' ';
 }

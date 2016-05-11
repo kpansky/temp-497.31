@@ -41,7 +41,7 @@ struct DTMFSamples_t {
 };
 
 struct DTMFResult_t {
-	int16_t code;
+	int8_t code;
 	int16_t toneA;
 	int16_t toneB;
 };

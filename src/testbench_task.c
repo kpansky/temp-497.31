@@ -1,5 +1,6 @@
 #include <string.h>
 #include <math.h>
+#include <stdio.h>
 
 /* FreeRTOS.org includes. */
 #include "FreeRTOS.h"
@@ -52,7 +53,6 @@ static struct TB_Tone_t tones[] =
 		{	DTMF_L3_FREQ,	DTMF_H1_FREQ	},
 		{	DTMF_L3_FREQ,	DTMF_H2_FREQ	},
 		{	DTMF_L3_FREQ,	DTMF_H3_FREQ	},
-		{	DTMF_NO_FREQ,	DTMF_NO_FREQ	},
 	};
 static int num_tones = sizeof(tones)/sizeof(tones[0]);
 float pi = 3.14159265359f;
@@ -97,5 +97,9 @@ void generate_tone(float freq, struct DTMFSamples_t *s) {
 }
 
 void print_results(struct DTMFResult_t *r) {
-
+	if (r->code != ' ' || r->toneA > 0 || r->toneB > 0) {
+		printf("Detected Lo(%d) Hi(%d) Code(%c)\n",r->toneA,r->toneB,r->code);
+	} else {
+		printf("NO DETECT\n");
+	}
 }

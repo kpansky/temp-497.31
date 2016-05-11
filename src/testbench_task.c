@@ -73,8 +73,8 @@ void vTestBenchTask( void *pvParameters ) {
 		for (ii=0;ii<DTMFSampleSize; ii++) {
 			samps[ii] = 0;
 		}
-		generate_tone(4000.0f, tones[tone_index].toneA, samps);
-		generate_tone(4000.0f, tones[tone_index].toneB, samps);
+		generate_tone(100.0f, tones[tone_index].toneA, samps);
+		generate_tone(100.0f, tones[tone_index].toneB, samps);
 
 		/* Move to the next tone */
 		tone_index++;

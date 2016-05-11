@@ -60,27 +60,27 @@ void pick_peaks(complex *cs, float threshold, int16_t *toneA, int16_t *toneB) {
 		avg += cs[ii].Re / DTMFSampleSize;
 	}
 
-	//threshold *= avg;
+	threshold *= avg;
 
 	/* check low bins for power */
-	if (cs[DTMF_L0_BIN].Re >= threshold) {
+	if (cs[DTMF_L0_BIN].Re > threshold) {
 		*toneA = DTMF_L0_FREQ;
-	} else if (cs[DTMF_L1_BIN].Re >= threshold) {
+	} else if (cs[DTMF_L1_BIN].Re > threshold) {
 		*toneA = DTMF_L1_FREQ;
-	} else if (cs[DTMF_L2_BIN].Re >= threshold) {
+	} else if (cs[DTMF_L2_BIN].Re > threshold) {
 		*toneA = DTMF_L2_FREQ;
-	} else if (cs[DTMF_L3_BIN].Re >= threshold) {
+	} else if (cs[DTMF_L3_BIN].Re > threshold) {
 		*toneA = DTMF_L3_FREQ;
 	}
 
 	/* check high bins for power */
-	if (cs[DTMF_H0_BIN].Re >= threshold) {
+	if (cs[DTMF_H0_BIN].Re > threshold) {
 		*toneB = DTMF_H0_FREQ;
-	} else if (cs[DTMF_H1_BIN].Re >= threshold) {
+	} else if (cs[DTMF_H1_BIN].Re > threshold) {
 		*toneB = DTMF_H1_FREQ;
-	} else if (cs[DTMF_H2_BIN].Re >= threshold) {
+	} else if (cs[DTMF_H2_BIN].Re > threshold) {
 		*toneB = DTMF_H2_FREQ;
-	} else if (cs[DTMF_H3_BIN].Re >= threshold) {
+	} else if (cs[DTMF_H3_BIN].Re > threshold) {
 		*toneB = DTMF_H3_FREQ;
 	}
 }

@@ -36,10 +36,6 @@
 #define DTMF_H2_BIN DTMF_BIN(DTMF_H2_FREQ)
 #define DTMF_H3_BIN DTMF_BIN(DTMF_H3_FREQ)
 
-struct DTMFSamples_t {
-	DTMFSampleType samp[DTMFSampleSize];
-};
-
 struct DTMFResult_t {
 	int8_t code;
 	int16_t toneA;

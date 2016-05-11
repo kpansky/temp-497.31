@@ -12,9 +12,9 @@
 #include "dtmf_data.h"
 #include "fft/fft.h"
 
-static struct DTMFSamples_t s;
+static DTMFSampleType* s;
 static struct DTMFResult_t r;
-complex cs[DTMFSampleSize];
+static complex cs[DTMFSampleSize];
 
 #define spec_power(x) (sqrt((x.Re * x.Re) + (x.Im * x.Im)))
 void pick_peaks(complex *cs, float thresh, int16_t *toneA, int16_t *toneB);
@@ -29,13 +29,15 @@ void vDTMFDetectTask( void *pvParameters ) {
 
 	for( ;; )
 	{
-		xQueueReceive( params->sampQ, &s, portMAX_DELAY );
+		BaseType_t status = xQueuePeek( params->sampQ, &s, portMAX_DELAY );
 
 		int ii;
 		for (ii=0; ii<DTMFSampleSize; ii++) {
-			cs[ii].Re = (float)s.samp[ii] / 16384.0f; // Need to convert this to float
+			cs[ii].Re = (float)s[ii] / 16384.0f;
 			cs[ii].Im = 0.0f;
 		}
+
+		xQueueReceive( params->sampQ, &s, portMAX_DELAY );
 
 		/* Do real work here */
 		fft(cs, DTMFSampleSize); // Need to ensure second arg is log2(DTMFSampleSize)
@@ -50,26 +52,35 @@ void pick_peaks(complex *cs, float threshold, int16_t *toneA, int16_t *toneB) {
 
 	*toneA = -1;
 	*toneB = -1;
+	float avg = 0.0f;
+	int ii;
+
+	for (ii=0; ii<DTMFSampleSize; ii++) {
+		cs[ii].Re = spec_power(cs[ii]);
+		avg += cs[ii].Re / DTMFSampleSize;
+	}
+
+	//threshold *= avg;
 
 	/* check low bins for power */
-	if (spec_power(cs[DTMF_L0_BIN]) >= threshold) {
+	if (cs[DTMF_L0_BIN].Re >= threshold) {
 		*toneA = DTMF_L0_FREQ;
-	} else if (spec_power(cs[DTMF_L1_BIN]) >= threshold) {
+	} else if (cs[DTMF_L1_BIN].Re >= threshold) {
 		*toneA = DTMF_L1_FREQ;
-	} else if (spec_power(cs[DTMF_L2_BIN]) >= threshold) {
+	} else if (cs[DTMF_L2_BIN].Re >= threshold) {
 		*toneA = DTMF_L2_FREQ;
-	} else if (spec_power(cs[DTMF_L3_BIN]) >= threshold) {
+	} else if (cs[DTMF_L3_BIN].Re >= threshold) {
 		*toneA = DTMF_L3_FREQ;
 	}
 
 	/* check high bins for power */
-	if (spec_power(cs[DTMF_H0_BIN]) >= threshold) {
+	if (cs[DTMF_H0_BIN].Re >= threshold) {
 		*toneB = DTMF_H0_FREQ;
-	} else if (spec_power(cs[DTMF_H1_BIN]) >= threshold) {
+	} else if (cs[DTMF_H1_BIN].Re >= threshold) {
 		*toneB = DTMF_H1_FREQ;
-	} else if (spec_power(cs[DTMF_H2_BIN]) >= threshold) {
+	} else if (cs[DTMF_H2_BIN].Re >= threshold) {
 		*toneB = DTMF_H2_FREQ;
-	} else if (spec_power(cs[DTMF_H3_BIN]) >= threshold) {
+	} else if (cs[DTMF_H3_BIN].Re >= threshold) {
 		*toneB = DTMF_H3_FREQ;
 	}
 }

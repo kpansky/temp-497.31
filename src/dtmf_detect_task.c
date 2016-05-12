@@ -16,7 +16,7 @@ static DTMFSampleType* s;
 static struct DTMFResult_t r;
 static complex cs[DTMFSampleSize];
 
-#define spec_power(x) (sqrt((x.Re * x.Re) + (x.Im * x.Im)))
+#define spec_power(x) ((x.Re * x.Re) + (x.Im * x.Im))
 void pick_peaks(complex *cs, float thresh, int16_t *toneA, int16_t *toneB);
 int8_t decode_tones(int16_t toneA, int16_t toneB);
 
@@ -61,8 +61,8 @@ void vDTMFDetectTask( void *pvParameters ) {
 
 void pick_peaks(complex *cs, float threshold, int16_t *toneA, int16_t *toneB) {
 
-	*toneA = -1;
-	*toneB = -1;
+	*toneA = 0;
+	*toneB = 0;
 	float avg = 0.0f;
 	int ii;
 

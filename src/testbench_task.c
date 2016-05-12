@@ -29,10 +29,10 @@ static struct TB_Tone_t tones[] =
 		{	DTMF_L1_FREQ,	DTMF_NO_FREQ	},
 		{	DTMF_L2_FREQ,	DTMF_NO_FREQ	},
 		{	DTMF_L3_FREQ,	DTMF_NO_FREQ	},
-		{	DTMF_H0_FREQ,	DTMF_NO_FREQ	},
-		{	DTMF_H1_FREQ,	DTMF_NO_FREQ	},
-		{	DTMF_H2_FREQ,	DTMF_NO_FREQ	},
-		{	DTMF_H3_FREQ,	DTMF_NO_FREQ	},
+		{	DTMF_NO_FREQ,	DTMF_H0_FREQ	},
+		{	DTMF_NO_FREQ,	DTMF_H1_FREQ	},
+		{	DTMF_NO_FREQ,	DTMF_H2_FREQ	},
+		{	DTMF_NO_FREQ,	DTMF_H3_FREQ	},
 		{	DTMF_NO_FREQ,	DTMF_NO_FREQ	},
 
 		/* Codes 0-9,A-B */
@@ -73,18 +73,23 @@ void vTestBenchTask( void *pvParameters ) {
 		for (ii=0;ii<DTMFSampleSize; ii++) {
 			samps[ii] = 0;
 		}
-		generate_tone(100.0f, tones[tone_index].toneA, samps);
-		generate_tone(100.0f, tones[tone_index].toneB, samps);
+		generate_tone(10.0f, tones[tone_index].toneA, samps);
+		generate_tone(10.0f, tones[tone_index].toneB, samps);
 
-		/* Move to the next tone */
-		tone_index++;
-		if (tone_index == num_tones) tone_index = 0;
 
 		/* Pass the synthetic data to the detector */
 		void *test = &samps;
 		xQueueSendToBack( params->sampQ, &test, portMAX_DELAY );
 		xQueueReceive( params->resultQ, &result, portMAX_DELAY );
-		print_results(&result);
+
+		if ((tones[tone_index].toneA != result.toneA) || (tones[tone_index].toneB != result.toneB)) {
+			print_results(&result);
+		}
+
+
+		/* Move to the next tone */
+		tone_index++;
+		if (tone_index == num_tones) tone_index = 0;
 	}
 }
 

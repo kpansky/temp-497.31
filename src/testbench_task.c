@@ -1,3 +1,4 @@
+#ifdef __DTMF_PERF__
 #include <string.h>
 #include <math.h>
 #include <stdio.h>
@@ -68,7 +69,6 @@ void vTestBenchTask( void *pvParameters ) {
 
 	for( ;; )
 	{
-#ifdef _DTMF_STANDALONE
 		//memset(samps, 0, sizeof(samps));
 		int ii=0;
 		for (ii=0;ii<DTMFSampleSize; ii++) {
@@ -81,7 +81,6 @@ void vTestBenchTask( void *pvParameters ) {
 		/* Pass the synthetic data to the detector */
 		void *test = &samps;
 		xQueueSendToBack( params->sampQ, &test, portMAX_DELAY );
-#endif //_DTMF_STANDALONE
 		xQueueReceive( params->resultQ, &result, portMAX_DELAY );
 
 		if ((tones[tone_index].toneA != result.toneA) || (tones[tone_index].toneB != result.toneB)) {
@@ -110,3 +109,4 @@ void print_results(struct DTMFResult_t *r) {
 		printf("NO DETECT\n");
 	}
 }
+#endif

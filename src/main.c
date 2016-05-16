@@ -89,6 +89,7 @@ int main( void )
 						2,
 						NULL );
 
+#ifdef __DTMF_PERF__
 		TestBenchTaskParam.sampQ = sampQ;
 		TestBenchTaskParam.resultQ = resultQ;
 		xTaskCreate(	vTestBenchTask,
@@ -97,6 +98,7 @@ int main( void )
 						(void *)&TestBenchTaskParam,
 						3,
 						NULL );
+#endif
 
 		DTMFDetectTaskParam.sampQ = sampQ;
 		DTMFDetectTaskParam.resultQ = resultQ;

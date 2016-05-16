@@ -106,7 +106,7 @@ int main( void )
 						"tDetect",
 						500,
 						(void *)&DTMFDetectTaskParam,
-						3,
+						configMAX_PRIORITIES-3,
 						NULL );
 
 		/* Start the scheduler so our tasks start executing. */

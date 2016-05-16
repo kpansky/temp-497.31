@@ -9,9 +9,17 @@
 #include "basic_io.h"
 
 /* Project includes. */
+#include "main.h"
+//#include "dma.h"
+#include "dac.h"
+#include "tonegen.h"
 #include "testbench_task.h"
 #include "dtmf_detect_task.h"
 #include "dtmf_data.h"
+#include "adc_task.h"
+
+/*#define _DTMF_STANDALONE */
+/*#define TONEGEN_INPUT_UNIT_TEST */
 
 /*-----------------------------------------------------------*/
 
@@ -19,35 +27,89 @@ static QueueHandle_t sampQ;
 static QueueHandle_t resultQ;
 static struct TestBenchTaskParam_t TestBenchTaskParam;
 static struct DTMFDetectTaskParam_t DTMFDetectTaskParam;
+DTMFSampleType ADC_BUFFERS[NUM_ADC_BUFFERS][DTMFSampleSize];
+
+void vProcessTask( void *pvParameters );
 
 int main( void )
 {
-	/* Init the semi-hosting. */
+	// Init the semi-hosting.
 	printf( "\n" );
 
+	// DAC/DMA Setup
+	NVIC_DisableIRQ( DMA_IRQn);
+	InitializeDAC();
+	//InitializeADC();
+	InitializeDMA();
+
+	/* Instantiate queue and semaphores */
+	xQueueToneInput = xQueueCreate( DTMF_REQ_QUEUE_SIZE, sizeof( char ) );
+	xQueueDMARequest = xQueueCreate( DMA_REQ_QUEUE_SIZE, sizeof( DAC_Setup_Message ));
+	dacResponseHandle = xQueueCreate( DMA_COMP_QUEUE_SIZE, sizeof( uint32_t ) );
 	sampQ = xQueueCreate( 1, sizeof(DTMFSampleType *) );
 	resultQ = xQueueCreate( 1, sizeof(struct DTMFResult_t) );
 
-	TestBenchTaskParam.sampQ = sampQ;
-	TestBenchTaskParam.resultQ = resultQ;
-	xTaskCreate(	vTestBenchTask,
-					"tTB",
-					500,
-					(void *)&TestBenchTaskParam,
-					2,
-					NULL );
 
-	DTMFDetectTaskParam.sampQ = sampQ;
-	DTMFDetectTaskParam.resultQ = resultQ;
-	xTaskCreate(	vDTMFDetectTask,
-					"tDetect",
-					500,
-					(void *)&DTMFDetectTaskParam,
-					2,
-					NULL );
+	if( sampQ != NULL &&
+		resultQ != NULL &&
+		xQueueToneInput != NULL &&
+		xQueueDMARequest != NULL &&
+		dacResponseHandle != NULL ) {
 
-	/* Start the scheduler so our tasks start executing. */
-	vTaskStartScheduler();
+	  xTaskCreate(  vTaskToneGenerator, /* Pointer to the function that implements the task. */
+					  "ToneGenerator",          /* Text name for the task.  This is to facilitate debugging only. */
+					  240,                      /* Stack depth in words. */
+					  NULL,                     /* No input data */
+					  1,                        /* This task will run at priority 1. */
+					  NULL );                   /* We are not using the task handle. */
+
+	  #ifdef TONEGEN_INPUT_UNIT_TEST
+	    xTaskCreate( vTaskToneRequestTest, "ToneRequestTest", 240, NULL, configMAX_PRIORITIES-2/*4*/, NULL );
+	  #endif
+
+	  #ifdef  TONEGEN_DMA_UNIT_TEST
+	    xTaskCreate( vTaskDMAHandlerTest, "DMAHandlerTest", 240, NULL, 2, NULL );
+	  #else
+	    //============================================================================
+	    // Create DAC and DMA Tasks
+	    //============================================================================
+	    xTaskCreate(  DAC_Handler,/* Pointer to the function that implements the task. */
+						"DAC",            /* Text name for the task.  This is to facilitate debugging only. */
+						240,              /* Stack depth in words. */
+						(void*)xQueueDMARequest, /* Pass the text to be printed in as the task parameter. */
+						configMAX_PRIORITIES-1,           /* This task will run at priority 1. */
+						NULL );           /* We are not using the task handle. */
+
+	    #endif
+
+		xTaskCreate(	vAdcTask,
+						"tADC",
+						240,
+						(void *)sampQ,
+						2,
+						NULL );
+
+		TestBenchTaskParam.sampQ = sampQ;
+		TestBenchTaskParam.resultQ = resultQ;
+		xTaskCreate(	vTestBenchTask,
+						"tTB",
+						500,
+						(void *)&TestBenchTaskParam,
+						3,
+						NULL );
+
+		DTMFDetectTaskParam.sampQ = sampQ;
+		DTMFDetectTaskParam.resultQ = resultQ;
+		xTaskCreate(	vDTMFDetectTask,
+						"tDetect",
+						500,
+						(void *)&DTMFDetectTaskParam,
+						3,
+						NULL );
+
+		/* Start the scheduler so our tasks start executing. */
+		vTaskStartScheduler();
+	}
 
 	/* If all is well we will never reach here as the scheduler will now be
 	running.  If we do reach here then it is likely that there was insufficient
@@ -84,5 +146,3 @@ void vApplicationTickHook( void )
 {
 	/* This example does not use the tick hook to perform any processing. */
 }
-
-

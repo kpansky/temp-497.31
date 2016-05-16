@@ -30,6 +30,7 @@ void vDTMFDetectTask( void *pvParameters ) {
 	for( ;; )
 	{
 		BaseType_t status = xQueuePeek( params->sampQ, &s, portMAX_DELAY );
+		if(status == pdPASS) {
 
 #ifdef __DTMF_PERF__
 		UBaseType_t stack_max = uxTaskGetStackHighWaterMark( 0 );
@@ -37,25 +38,26 @@ void vDTMFDetectTask( void *pvParameters ) {
 		TickType_t t1;
 #endif
 
-		int ii;
-		for (ii=0; ii<DTMFSampleSize; ii++) {
-			cs[ii].Re = (float)s[ii] / 16384.0f;
-			cs[ii].Im = 0.0f;
-		}
+			int ii;
+			for (ii=0; ii<DTMFSampleSize; ii++) {
+				cs[ii].Re = (float)s[ii] / 16384.0f;
+				cs[ii].Im = 0.0f;
+			}
 
-		xQueueReceive( params->sampQ, &s, portMAX_DELAY );
+			xQueueReceive( params->sampQ, &s, portMAX_DELAY );
 
-		/* Do real work here */
-		fft(cs, DTMFSampleSize); // Need to ensure second arg is log2(DTMFSampleSize)
-		pick_peaks(cs, 5.0f, &r.toneA, &r.toneB);
-		r.code = decode_tones(r.toneA,r.toneB);
+			/* Do real work here */
+			fft(cs, DTMFSampleSize); // Need to ensure second arg is log2(DTMFSampleSize)
+			pick_peaks(cs, 5.0f, &r.toneA, &r.toneB);
+			r.code = decode_tones(r.toneA,r.toneB);
 
 #ifdef __DTMF_PERF__
 		t1 = xTaskGetTickCount();
 		printf("DTMF STACK %d TIME %d\n", stack_max, t1-t0);
 #endif
 
-		xQueueSendToBack( params->resultQ, &r, portMAX_DELAY );
+			xQueueSendToBack( params->resultQ, &r, portMAX_DELAY );
+		}
 	}
 }
 

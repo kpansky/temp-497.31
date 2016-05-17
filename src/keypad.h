@@ -22,6 +22,7 @@
 #include "LPC17xx.h"
 
 #define KEYPAD_TASK 1
+#define UART_TASK 2
 
 /* Define the structure type that will be passed on the queue. */
 typedef struct
@@ -35,8 +36,6 @@ typedef struct
   xQueueHandle xIoInputQueue;
   xQueueHandle xDACQueue;
 } xQueueType;
-
-#define UART_TASK 2
 
 /*
  * GPIOGetValue - Task - process keypad key press/release upon

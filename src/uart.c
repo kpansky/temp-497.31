@@ -228,6 +228,10 @@ void uart_rx_handler()
 			//don't send to the queue if the queue doesn't exist
 			if( recv_queue != NULL )
 			{
+#if 0
+#warning THIS IS INCORRECT
+xQueueSend needs a pointer to a memory location that has the same sie and type
+as the queue create...  This code as is will fail in novel ways.
 				//send the character to inform the IO layer that
 				//a series of letters is incoming
 				xQueueSend(recv_queue,'+',0);
@@ -236,6 +240,7 @@ void uart_rx_handler()
 					//send to provided queue - verify that this would work
 					xQueueSend(recv_queue,recv_buffer[i],0);
 				}
+#endif
 			}
 			else
 			{

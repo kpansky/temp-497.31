@@ -60,7 +60,7 @@ int main( void )
 	sampQ = xQueueCreate( 1, sizeof(DTMFSampleType *) );
 	resultQ = xQueueCreate( 1, sizeof(struct DTMFResult_t) );
 	lQueues.xIoInputQueue = xQueueCreate( 2, sizeof(xData) );
-	lQueues.xDACQueue =     xQueueCreate( 2, sizeof(xData) );
+	lQueues.xDACQueue =     xQueueToneInput;
 
 
 	if( sampQ != NULL &&

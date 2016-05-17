@@ -11,6 +11,7 @@ void uiInterfaceTask( void *pvParameters )
 	xData xReceivedStructure;
 	portTickType xLastWakeTime;
 	portBASE_TYPE xStatus;
+	portTickType xTicksToWait = portMAX_DELAY;
 
 	char string[256];
 	char currentKey = 0;
@@ -40,14 +41,14 @@ void uiInterfaceTask( void *pvParameters )
 					sprintf(string, "KEYPAD Symbol Pressed %c \n", currentKey);
 					vPrintString(string);
 
-					// xStatus = xQueueSendToBack( lQueues->xDACQueue, &xReceivedStructure, xTicksToWait );
+					xStatus = xQueueSendToBack( lQueues->xDACQueue, &xReceivedStructure.ucValue, xTicksToWait );
 				}
 				else
 				{
 					sprintf(string, "KEYPAD Symbol Released %c \n", currentKey);
 					vPrintString(string);
 
-					// xStatus = xQueueSendToBack( lQueues->xDACQueue, &xReceivedStructure, xTicksToWait );
+					xStatus = xQueueSendToBack( lQueues->xDACQueue, &xReceivedStructure.ucValue, xTicksToWait );
 				}
 			}
 			if (xReceivedStructure.ucSource == UART_TASK)
@@ -58,14 +59,14 @@ void uiInterfaceTask( void *pvParameters )
 					sprintf(string, "UART Symbol Pressed %c \n", currentKey);
 					vPrintString(string);
 
-					// xStatus = xQueueSendToBack( lQueues->xDACQueue, &xReceivedStructure, xTicksToWait );
+					xStatus = xQueueSendToBack( lQueues->xDACQueue, &xReceivedStructure.ucValue, xTicksToWait );
 				}
 				else
 				{
 					sprintf(string, "UART Symbol Released %c \n", currentKey);
 					vPrintString(string);
 
-					// xStatus = xQueueSendToBack( lQueues->xDACQueue, &xReceivedStructure, xTicksToWait );
+					xStatus = xQueueSendToBack( lQueues->xDACQueue, &xReceivedStructure.ucValue, xTicksToWait );
 				}
 			}
 		}

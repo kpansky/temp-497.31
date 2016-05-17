@@ -10,7 +10,7 @@
 #define DAC_SAMPLE_PER_SECOND   16000
 
 /* Debug Tasks */
-#define TONEGEN_INPUT_UNIT_TEST    //CONFIGURABLE - Build in Tone Input Unit Test Tasks
+//#define TONEGEN_INPUT_UNIT_TEST    //CONFIGURABLE - Build in Tone Input Unit Test Tasks
 //#define TONEGEN_DMA_UNIT_TEST      //CONFIGURABLE - Build in Tone DMA Unit Test Tasks
 
 /* Debug Prints */

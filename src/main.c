@@ -32,6 +32,13 @@ static struct TestBenchTaskParam_t TestBenchTaskParam;
 static struct DTMFDetectTaskParam_t DTMFDetectTaskParam;
 DTMFSampleType ADC_BUFFERS[NUM_ADC_BUFFERS][DTMFSampleSize];
 static xQueueType lQueues;
+/* Queue Into ToneGenerator Task */
+xQueueHandle xQueueToneInput;
+
+/* Queues Between ToneGenerator and DACHandler Task */
+xQueueHandle xQueueDMARequest;
+xQueueHandle dacResponseHandle;
+
 
 void vProcessTask( void *pvParameters );
 

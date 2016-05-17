@@ -18,11 +18,11 @@
 //#define DEBUG_TONE_SAMPLE            //CONFIGURABLE - Turn on print of first Tone Sample
 
 /* Queue Into ToneGenerator Task */
-xQueueHandle xQueueToneInput;
+extern xQueueHandle xQueueToneInput;
 
 /* Queues Between ToneGenerator and DACHandler Task */
-xQueueHandle xQueueDMARequest;
-xQueueHandle dacResponseHandle;
+extern xQueueHandle xQueueDMARequest;
+extern xQueueHandle dacResponseHandle;
 
 #endif
 

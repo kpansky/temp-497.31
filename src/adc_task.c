@@ -38,7 +38,7 @@ DTMFSampleType adc_read(void)
 	while ((LPC_ADC->ADGDR & 0x80000000) == 0x0); //Done bit auto clear
 
 	/* Get the result and mask it off, format it to a int16_t for DTMF Task */
-	adc_data = (LPC_ADC->ADGDR >> 1) & 0x7FFF;
+	adc_data = (~LPC_ADC->ADGDR) & 0xFFFF;
 
 	/* start the conversion so it is ready when the next interrupt fires */
 	LPC_ADC->ADCR |= (0x1 << 24); //start in ADCR

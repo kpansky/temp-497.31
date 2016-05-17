@@ -19,6 +19,7 @@
 #include "adc_task.h"
 #include "ui.h"
 #include "keypad.h"
+#include "uart.h"
 
 /*#define _DTMF_STANDALONE */
 /*#define TONEGEN_INPUT_UNIT_TEST */
@@ -115,6 +116,12 @@ int main( void )
 						(void *)&DTMFDetectTaskParam,
 						configMAX_PRIORITIES-3,
 						NULL );
+
+		// Add this when UART task code is ready
+		// xTaskCreate( UARTInterfaceTask, "UART_Task", 240, &(lQueues.xDACQueue), 1, NULL );
+		xTaskCreate( uart_tx_handler, "Tx Task", 500, NULL, 2, NULL );
+		xTaskCreate( uart_rx_handler, "Rx Task", 500, NULL, 2, NULL );
+		uart_configure(UART_PARITY_NONE,UART_1_STOP,UART_8_BIT);
 
 		/* Create four instances of the task that will write to the queue */
 		xTaskCreate( gpioInterfaceTask, "Keypad_Task", 240, &(lQueues.xIoInputQueue), 1, NULL);

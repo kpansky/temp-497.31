@@ -56,7 +56,8 @@ void vDTMFDetectTask( void *pvParameters ) {
 		printf("DTMF STACK %d TIME %d\n", stack_max, t1-t0);
 #endif
 
-			xQueueSendToBack( params->resultQ, &r, portMAX_DELAY );
+			// Send, but allow dropping
+			xQueueSendToBack( params->resultQ, &r, 0 );
 		}
 	}
 }

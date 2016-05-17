@@ -17,6 +17,8 @@
 #include "dtmf_detect_task.h"
 #include "dtmf_data.h"
 #include "adc_task.h"
+#include "ui.h"
+#include "keypad.h"
 
 /*#define _DTMF_STANDALONE */
 /*#define TONEGEN_INPUT_UNIT_TEST */
@@ -28,6 +30,7 @@ static QueueHandle_t resultQ;
 static struct TestBenchTaskParam_t TestBenchTaskParam;
 static struct DTMFDetectTaskParam_t DTMFDetectTaskParam;
 DTMFSampleType ADC_BUFFERS[NUM_ADC_BUFFERS][DTMFSampleSize];
+static xQueueType lQueues;
 
 void vProcessTask( void *pvParameters );
 
@@ -48,13 +51,17 @@ int main( void )
 	dacResponseHandle = xQueueCreate( DMA_COMP_QUEUE_SIZE, sizeof( uint32_t ) );
 	sampQ = xQueueCreate( 1, sizeof(DTMFSampleType *) );
 	resultQ = xQueueCreate( 1, sizeof(struct DTMFResult_t) );
+	lQueues.xIoInputQueue = xQueueCreate( 2, sizeof(xData) );
+	lQueues.xDACQueue =     xQueueCreate( 2, sizeof(xData) );
 
 
 	if( sampQ != NULL &&
 		resultQ != NULL &&
 		xQueueToneInput != NULL &&
 		xQueueDMARequest != NULL &&
-		dacResponseHandle != NULL ) {
+		dacResponseHandle != NULL &&
+		lQueues.xIoInputQueue != NULL &&
+		lQueues.xDACQueue != NULL) {
 
 	  xTaskCreate(  vTaskToneGenerator, /* Pointer to the function that implements the task. */
 					  "ToneGenerator",          /* Text name for the task.  This is to facilitate debugging only. */
@@ -108,6 +115,10 @@ int main( void )
 						(void *)&DTMFDetectTaskParam,
 						configMAX_PRIORITIES-3,
 						NULL );
+
+		/* Create four instances of the task that will write to the queue */
+		xTaskCreate( gpioInterfaceTask, "Keypad_Task", 240, &(lQueues.xIoInputQueue), 1, NULL);
+		xTaskCreate( uiInterfaceTask, "UI_Task", 240, &lQueues, 2, NULL );
 
 		/* Start the scheduler so our tasks start executing. */
 		vTaskStartScheduler();

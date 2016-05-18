@@ -60,7 +60,7 @@ void vIoRxTask( void *pvParameters )
   /* This task is also defined within an infinite loop. */
   for( ;; )
   {
-	xStatus = xQueueReceive( xIoQueue, &cIoMsgBuf, 0 );
+	xStatus = xQueueReceive( xIoQueue, &cIoMsgBuf, portMAX_DELAY );
 
 	if( xStatus == pdPASS )
 	{

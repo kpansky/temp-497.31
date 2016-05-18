@@ -50,13 +50,12 @@ int main( void )
 	// DAC/DMA Setup
 	NVIC_DisableIRQ( DMA_IRQn);
 	InitializeDAC();
-	//InitializeADC();
 	InitializeDMA();
 
 	/* Instantiate queue and semaphores */
 	xQueueToneInput = xQueueCreate( DTMF_REQ_QUEUE_SIZE, sizeof( char ) );
 	xQueueDMARequest = xQueueCreate( DMA_REQ_QUEUE_SIZE, sizeof( DAC_Setup_Message ));
-	dacResponseHandle = xQueueCreate( DMA_COMP_QUEUE_SIZE, sizeof( uint32_t ) );
+	dacResponseHandle = xQueueCreate( DMA_COMP_QUEUE_SIZE, sizeof( DAC_Complete_Message ) );
 	sampQ = xQueueCreate( 1, sizeof(DTMFSampleType *) );
 	resultQ = xQueueCreate( 1, sizeof(struct DTMFResult_t) );
 	lQueues.xIoInputQueue = xQueueCreate( 2, sizeof(xData) );

@@ -162,7 +162,7 @@ void GetNextAvailableBuffer(uint8_t *activeBuffer)
   *activeBuffer = INVALID_BUFFER;
   uint8_t done = 0;
   portBASE_TYPE xStatus;
-  DAC_Sample *bufPtrToRelease = NULL;
+  DAC_Complete_Message completeMessage;
 
   while(done == 0)
   {
@@ -191,15 +191,15 @@ void GetNextAvailableBuffer(uint8_t *activeBuffer)
 		  //Block / wait until a buffer is available before
 		  //the task proceeds
 
-		  xStatus = xQueueReceive( dacResponseHandle, &bufPtrToRelease, portMAX_DELAY);
+		  xStatus = xQueueReceive( dacResponseHandle, &completeMessage, portMAX_DELAY);
 
 		  if( xStatus == pdPASS )
 		  {
 			#ifdef DEBUG_TONE_SCHED
-			  vPrintStringAndNumber("  Buf rel addr ", (uint32_t) bufPtrToRelease);
+			  vPrintStringAndNumber("  Buf rel addr ", (uint32_t) completeMessage.firstSample);
 			#endif
 			//DMA request completed, release buffer
-			ReleaseBuffer(bufPtrToRelease);
+			ReleaseBuffer(completeMessage.firstSample);
 		  }
 		}
   }

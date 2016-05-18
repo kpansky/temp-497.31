@@ -7,7 +7,6 @@
 #include "basic_io.h"
 #include <stdint.h>
 
-#define DAC_SAMPLE_PER_SECOND   16000
 
 /* Debug Tasks */
 //#define TONEGEN_INPUT_UNIT_TEST    //CONFIGURABLE - Build in Tone Input Unit Test Tasks

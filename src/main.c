@@ -92,7 +92,7 @@ int main( void )
 						"DAC",            /* Text name for the task.  This is to facilitate debugging only. */
 						240,              /* Stack depth in words. */
 						(void*)xQueueDMARequest, /* Pass the text to be printed in as the task parameter. */
-						configMAX_PRIORITIES-1,           /* This task will run at priority 1. */
+						configMAX_PRIORITIES-1,           /* This task will run at highest priority. */
 						NULL );           /* We are not using the task handle. */
 
 	    #endif

@@ -247,7 +247,7 @@ void gpioInterfaceTask(void *pvParameters)
             sprintf(string,"Pressed %c @ column %d , row =%d, intCounter= %d \n", symbolDef[outputpin - OUTPUT_PIN_MIN][inputpin - INPUT_PIN_MIN],(inputpin - INPUT_PIN_MIN), (outputpin - OUTPUT_PIN_MIN), intCounter);
             vPrintString(string);
 #endif
-            xStatus = xQueueSendToBack(*xKeypadQueue, (void* ) &xSendStructure, xSleepTime);
+            xStatus = xQueueSendToBack(*xKeypadQueue, (char)xSendStructure.ucValue, xSleepTime);
             buttonState[outputpin - OUTPUT_PIN_MIN][inputpin - INPUT_PIN_MIN] = PRESSED;
             buttonXPressedIndex = outputpin - OUTPUT_PIN_MIN;
             buttonYPressedIndex = inputpin - INPUT_PIN_MIN;
@@ -300,7 +300,7 @@ void gpioInterfaceTask(void *pvParameters)
                 buttonYPressedIndex = 0xFF;
                 buttonState[outputpin - OUTPUT_PIN_MIN][inputpin - INPUT_PIN_MIN] = DEPRESSED;
                 xSendStructure.ucValue = 0;
-                xStatus = xQueueSendToBack(*xKeypadQueue, (void* ) &xSendStructure, xSleepTime);
+                xStatus = xQueueSendToBack(*xKeypadQueue, (char)0, xSleepTime);
                 // Re-enable falling edge disable rising edge interrupt for this pin
                 LPC_GPIOINT->IO2IntEnF |= (1 << inputpin);
                 LPC_GPIOINT->IO2IntEnR &= ~(1 << inputpin);

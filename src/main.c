@@ -38,7 +38,7 @@ xQueueHandle xQueueToneInput;
 /* Queues Between ToneGenerator and DACHandler Task */
 xQueueHandle xQueueDMARequest;
 xQueueHandle dacResponseHandle;
-
+xQueueHandle xIoQueue;
 
 void vProcessTask( void *pvParameters );
 
@@ -55,6 +55,7 @@ int main( void )
 	/* Instantiate queue and semaphores */
 	xQueueToneInput = xQueueCreate( DTMF_REQ_QUEUE_SIZE, sizeof( char ) );
 	xQueueDMARequest = xQueueCreate( DMA_REQ_QUEUE_SIZE, sizeof( DAC_Setup_Message ));
+	xIoQueue = xQueueCreate(16,sizeof(char));
 	dacResponseHandle = xQueueCreate( DMA_COMP_QUEUE_SIZE, sizeof( DAC_Complete_Message ) );
 	sampQ = xQueueCreate( 1, sizeof(DTMFSampleType *) );
 	resultQ = xQueueCreate( 1, sizeof(struct DTMFResult_t) );
@@ -130,7 +131,7 @@ int main( void )
 
 
 		/* Create four instances of the task that will write to the queue */
-		xTaskCreate( gpioInterfaceTask, "Keypad_Task", 240, &(lQueues.xIoInputQueue), 1, NULL);
+		xTaskCreate( gpioInterfaceTask, "Keypad_Task", 240, &xIoQueue, 1, NULL);
 		xTaskCreate( vIoRxTask, "IO_Receiver", 240, NULL, 1, NULL );
 
 		/* Start the scheduler so our tasks start executing. */

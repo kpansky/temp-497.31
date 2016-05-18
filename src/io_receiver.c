@@ -33,6 +33,8 @@
  */
 #include "io_receiver.h"
 
+extern xQueueHandle xIoQueue;
+
 // Forward declaration
 portBASE_TYPE xSend_Dac_Char( const char *pcChar );
 
@@ -147,7 +149,7 @@ portBASE_TYPE xSend_Dac_Char( const char *pcChar )
 #endif
 
   vPrintString( "xSend_Dac_Char " );
-  vPrintChar(pcChar);
+  //vPrintChar(pcChar);
 
   return xStatus;
 }

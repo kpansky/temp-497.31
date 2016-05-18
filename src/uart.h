@@ -55,33 +55,8 @@
 //set this to non-zero to enable printf debug statements
 #define UART_DEBUG 0
 
-//set parity type
-typedef enum{
-	UART_PARITY_ODD = 0,
-	UART_PARITY_EVEN,
-	UART_PARITY_FORCED_1,
-	UART_PARITY_FORCED_0,
-	UART_PARITY_NONE
-} parity_type;
-
-//set start/stop bits
-typedef enum{
-	UART_1_STOP = 0,
-	UART_2_STOP
-} stop_type;
-
-//set number of bits
-typedef enum{
-	UART_5_BIT = 0,
-	UART_6_BIT,
-	UART_7_BIT,
-	UART_8_BIT
-} data_size_type;
-
 //configure the UART - this must be called before the UART will work
-void uart_configure(parity_type parity,
-					stop_type stop,
-					data_size_type data_size);
+void uart_configure();
 
 //UART public send functions
 //

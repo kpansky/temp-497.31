@@ -17,7 +17,7 @@
 #include "dtmf_detect_task.h"
 #include "dtmf_data.h"
 #include "adc_task.h"
-#include "ui.h"
+#include "io_receiver.h"
 #include "keypad.h"
 #include "uart.h"
 
@@ -123,15 +123,15 @@ int main( void )
 						configMAX_PRIORITIES-3,
 						NULL );
 
-		// Add this when UART task code is ready
-		// xTaskCreate( UARTInterfaceTask, "UART_Task", 240, &(lQueues.xDACQueue), 1, NULL );
 		xTaskCreate( uart_tx_handler, "Tx Task", 500, NULL, 2, NULL );
 		xTaskCreate( uart_rx_handler, "Rx Task", 500, NULL, 2, NULL );
-		uart_configure(UART_PARITY_NONE,UART_1_STOP,UART_8_BIT);
+		uart_configure();
+
+
 
 		/* Create four instances of the task that will write to the queue */
 		xTaskCreate( gpioInterfaceTask, "Keypad_Task", 240, &(lQueues.xIoInputQueue), 1, NULL);
-		xTaskCreate( uiInterfaceTask, "UI_Task", 240, &lQueues, 2, NULL );
+		xTaskCreate( vIoRxTask, "IO_Receiver", 240, NULL, 1, NULL );
 
 		/* Start the scheduler so our tasks start executing. */
 		vTaskStartScheduler();

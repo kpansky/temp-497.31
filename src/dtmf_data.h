@@ -1,10 +1,12 @@
 #ifndef DTMF_DATA_H
 #define DTMF_DATA_H
 
+/* Global parametrics */
 #define DTMFSampleSize 256
 #define DTMFSampleType int16_t
 #define DTMFSampleRate 8000
 
+/* DTMF frequencies (Hz) */
 #define DTMF_NO_FREQ 0
 #define DTMF_L0_FREQ 697
 #define DTMF_L1_FREQ 770
@@ -15,17 +17,7 @@
 #define DTMF_H2_FREQ 1477
 #define DTMF_H3_FREQ 1633
 
-#define DTMF_PERIOD(x) (DTMFSampleRate / x)
-#define DTMF_NO_PERIOD 0
-#define DTMF_L0_PERIOD DTMF_PERIOD(DTMF_L0_FREQ)
-#define DTMF_L1_PERIOD DTMF_PERIOD(DTMF_L1_FREQ)
-#define DTMF_L2_PERIOD DTMF_PERIOD(DTMF_L2_FREQ)
-#define DTMF_L3_PERIOD DTMF_PERIOD(DTMF_L3_FREQ)
-#define DTMF_H0_PERIOD DTMF_PERIOD(DTMF_H0_FREQ)
-#define DTMF_H1_PERIOD DTMF_PERIOD(DTMF_H1_FREQ)
-#define DTMF_H2_PERIOD DTMF_PERIOD(DTMF_H2_FREQ)
-#define DTMF_H3_PERIOD DTMF_PERIOD(DTMF_H3_FREQ)
-
+/* DTMF frequency FFT bins */
 #define DTMF_BIN(x) ((int16_t)((float)x / ((float)DTMFSampleRate / (float)DTMFSampleSize)) )
 #define DTMF_L0_BIN DTMF_BIN(DTMF_L0_FREQ)
 #define DTMF_L1_BIN DTMF_BIN(DTMF_L1_FREQ)
@@ -36,6 +28,9 @@
 #define DTMF_H2_BIN DTMF_BIN(DTMF_H2_FREQ)
 #define DTMF_H3_BIN DTMF_BIN(DTMF_H3_FREQ)
 
+/* Result of the DTMF detection */
+/* Code is the ASCII of the detected tones (space for none) */
+/* toneX is the tone frequency in hz */
 struct DTMFResult_t {
 	int8_t code;
 	int16_t toneA;

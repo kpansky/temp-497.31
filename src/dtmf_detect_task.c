@@ -28,25 +28,31 @@ void vDTMFDetectTask( void *pvParameters ) {
 	char output[50];
 
 	vPrintString( "DTMF Detector started\n" );
+
+	/* Prepare FFT */
 	init_Wn();
 
 	for( ;; )
 	{
+		/* Peek at the data rather than receive to prevent the buffer from
+		 * being reused until we are done */
 		BaseType_t status = xQueuePeek( params->sampQ, &s, portMAX_DELAY );
 		if(status == pdPASS) {
 
 #ifdef __DTMF_PERF__
-		UBaseType_t stack_max = uxTaskGetStackHighWaterMark( 0 );
-		TickType_t t0 = xTaskGetTickCount();
-		TickType_t t1;
+			UBaseType_t stack_max = uxTaskGetStackHighWaterMark( 0 );
+			TickType_t t0 = xTaskGetTickCount();
+			TickType_t t1;
 #endif
 
+			/* Convert samples to complex floating point */
 			int ii;
 			for (ii=0; ii<DTMFSampleSize; ii++) {
 				cs[ii].Re = (float)s[ii] / 16384.0f;
 				cs[ii].Im = 0.0f;
 			}
 
+			/* Now that we have a separate copy, release the buffer */
 			xQueueReceive( params->sampQ, &s, portMAX_DELAY );
 
 			/* Do real work here */
@@ -55,8 +61,8 @@ void vDTMFDetectTask( void *pvParameters ) {
 			r.code = decode_tones(r.toneA,r.toneB);
 
 #ifdef __DTMF_PERF__
-		t1 = xTaskGetTickCount();
-		printf("DTMF STACK %d TIME %d\n", stack_max, t1-t0);
+			t1 = xTaskGetTickCount();
+			printf("DTMF STACK %d TIME %d\n", stack_max, t1-t0);
 #endif
 
 			// Send, but allow dropping
@@ -70,6 +76,9 @@ void vDTMFDetectTask( void *pvParameters ) {
 	}
 }
 
+/* Pick the DTMF tones from FFT resuts */
+/* threshold is the minimum amount above noise floor required to declare a tone */
+/* toneX ar the detected tones (Hz) */
 void pick_peaks(complex *cs, float threshold, int16_t *toneA, int16_t *toneB) {
 
 	*toneA = 0;
@@ -77,11 +86,13 @@ void pick_peaks(complex *cs, float threshold, int16_t *toneA, int16_t *toneB) {
 	float avg = 0.0f;
 	int ii;
 
+	/* Compute the average spectrum power */
 	for (ii=0; ii<DTMFSampleSize; ii++) {
 		cs[ii].Re = spec_power(cs[ii]);
 		avg += cs[ii].Re / DTMFSampleSize;
 	}
 
+	/* Scale the average power by the threshold */
 	threshold *= avg;
 
 	/* check low bins for power */
@@ -107,6 +118,8 @@ void pick_peaks(complex *cs, float threshold, int16_t *toneA, int16_t *toneB) {
 	}
 }
 
+/* Provided to frequencies (Hz) reurn an ASCII representation of the DTMF */
+/* Illegal combinations return space */
 int8_t decode_tones(int16_t toneA, int16_t toneB) {
 	if ((toneA == DTMF_L0_FREQ) && (toneB == DTMF_H0_FREQ)) {
 		return '1';

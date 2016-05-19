@@ -17,7 +17,7 @@
 #include "dtmf_detect_task.h"
 #include "dtmf_data.h"
 #include "adc_task.h"
-#include "ui.h"
+#include "io_receiver.h"
 #include "keypad.h"
 #include "uart.h"
 
@@ -38,7 +38,7 @@ xQueueHandle xQueueToneInput;
 /* Queues Between ToneGenerator and DACHandler Task */
 xQueueHandle xQueueDMARequest;
 xQueueHandle dacResponseHandle;
-
+xQueueHandle xIoQueue;
 
 void vProcessTask( void *pvParameters );
 
@@ -55,6 +55,7 @@ int main( void )
 	/* Instantiate queue and semaphores */
 	xQueueToneInput = xQueueCreate( DTMF_REQ_QUEUE_SIZE, sizeof( char ) );
 	xQueueDMARequest = xQueueCreate( DMA_REQ_QUEUE_SIZE, sizeof( DAC_Setup_Message ));
+	xIoQueue = xQueueCreate(16,sizeof(char));
 	dacResponseHandle = xQueueCreate( DMA_COMP_QUEUE_SIZE, sizeof( DAC_Complete_Message ) );
 	sampQ = xQueueCreate( 1, sizeof(DTMFSampleType *) );
 	resultQ = xQueueCreate( 1, sizeof(struct DTMFResult_t) );
@@ -74,7 +75,7 @@ int main( void )
 					  "ToneGenerator",          /* Text name for the task.  This is to facilitate debugging only. */
 					  240,                      /* Stack depth in words. */
 					  NULL,                     /* No input data */
-					  1,                        /* This task will run at priority 1. */
+					  configMAX_PRIORITIES-2,                        /* This task will run at priority 1. */
 					  NULL );                   /* We are not using the task handle. */
 
 	  #ifdef TONEGEN_INPUT_UNIT_TEST
@@ -123,15 +124,15 @@ int main( void )
 						configMAX_PRIORITIES-3,
 						NULL );
 
-		// Add this when UART task code is ready
-		// xTaskCreate( UARTInterfaceTask, "UART_Task", 240, &(lQueues.xDACQueue), 1, NULL );
 		xTaskCreate( uart_tx_handler, "Tx Task", 500, NULL, 2, NULL );
 		xTaskCreate( uart_rx_handler, "Rx Task", 500, NULL, 2, NULL );
-		uart_configure(UART_PARITY_NONE,UART_1_STOP,UART_8_BIT);
+		uart_configure();
+
+
 
 		/* Create four instances of the task that will write to the queue */
-		xTaskCreate( gpioInterfaceTask, "Keypad_Task", 240, &(lQueues.xIoInputQueue), 1, NULL);
-		xTaskCreate( uiInterfaceTask, "UI_Task", 240, &lQueues, 2, NULL );
+		xTaskCreate( gpioInterfaceTask, "Keypad_Task", 240, &xIoQueue, configMAX_PRIORITIES-1, NULL);
+		xTaskCreate( vIoRxTask, "IO_Receiver", 240, NULL, configMAX_PRIORITIES-1, NULL );
 
 		/* Start the scheduler so our tasks start executing. */
 		vTaskStartScheduler();

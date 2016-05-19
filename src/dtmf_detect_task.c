@@ -12,6 +12,8 @@
 #include "dtmf_data.h"
 #include "fft/fft.h"
 
+#include "uart.h"
+
 static DTMFSampleType* s;
 static struct DTMFResult_t r;
 static complex cs[DTMFSampleSize];
@@ -23,6 +25,7 @@ int8_t decode_tones(int16_t toneA, int16_t toneB);
 void vDTMFDetectTask( void *pvParameters ) {
 
 	struct DTMFDetectTaskParam_t* params = (struct DTMFDetectTaskParam_t *)pvParameters;
+	char output[50];
 
 	vPrintString( "DTMF Detector started\n" );
 	init_Wn();
@@ -57,7 +60,12 @@ void vDTMFDetectTask( void *pvParameters ) {
 #endif
 
 			// Send, but allow dropping
-			xQueueSendToBack( params->resultQ, &r, 0 );
+			if(r.code != ' ')
+			{
+				sprintf(output,"Detected code %c\r\n",r.code);
+				uart_send_noblock(output,strlen(output));
+				printf("Detected code %c\n",r.code);
+			}
 		}
 	}
 }

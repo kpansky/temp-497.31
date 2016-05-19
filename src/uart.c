@@ -18,10 +18,11 @@ static SemaphoreHandle_t txHandleSem;
 static SemaphoreHandle_t transmit_mutex;
 static SemaphoreHandle_t receive_mutex;
 static QueueHandle_t* recv_queue = NULL;
+static char autodial_char = '+';
 
-void uart_configure(parity_type parity,
-					stop_type stop,
-					data_size_type data_size)
+//current baud rate is 12195
+
+void uart_configure()
 {
 	//disable interrupt while configuring
 	NVIC_DisableIRQ(UART2_IRQn);
@@ -29,26 +30,28 @@ void uart_configure(parity_type parity,
 	//set up FIFO - enable fifo, clean fifos, no DMA, trigger on 1 char
     LPC_SC->PCONP |= (1 << 24);
     LPC_SC->PCLKSEL1 |= 0x10000;
-    LPC_UART2->FCR = 0x07;
-
-	//set line control - no break control, enable divisor latch
-	//only write bits 0-7
-	LPC_UART2->LCR = (0xF & ((uint8_t)data_size|((uint8_t)stop << 2))|0x8);
-	if(parity != UART_PARITY_NONE)
-	{
-		LPC_UART2->LCR |= 0xf & (parity << 3);
-	}
 
 	//disable IrDA
 	LPC_UART2->ICR = 0;
 
-	//set pins to UART2
-	LPC_PINCON->PINSEL4 |= 0x0a00;	//set txd2 and rxd2
+	//set serial characteristics, enable brg register r/w
+    LPC_UART2->LCR |= 0x83;
 
 	//configure baud rate generator
-	LPC_UART2->FDR = 0x10;
-	LPC_UART2->DLM = 0;
-	LPC_UART2->DLL = 0;
+	LPC_UART2->FDR |= 0x11;
+	LPC_UART2->DLM |= 0x1;
+	LPC_UART2->DLL |= 0x1;
+
+	//disable brg register r/w (enable ier register r/w)
+	LPC_UART2->LCR &= ~0x80;
+
+    LPC_UART2->FCR = 0x07;
+
+	//set pins to UART2
+	//TX = P2.8
+	//RX = P2.9
+	LPC_PINCON->PINSEL4 |= 0xa0000;	//set txd2 and rxd2
+	LPC_PINCON->PINMODE4 |= 0xa0000;
 
 	//create semaphores for task handoff
 	rxHandleSem = xSemaphoreCreateBinary();
@@ -128,15 +131,17 @@ void UART2_IRQHandler()
 		portEND_SWITCHING_ISR( uart_tx_handler );
 	}
 	//receive interrupt (interrupt status = 0 and receive interrupt
-	else if( interrupt_reg & 0x4 )
+	else if( (interrupt_reg & 0xf) == 0x4 )
 	{
 		xSemaphoreGiveFromISR(rxHandleSem,NULL);
 
 		//if not use this - from example
 		portCLEAR_INTERRUPT_MASK_FROM_ISR( 0 );
 
+		recv_buffer[recv_buffer_index] = LPC_UART2->RBR;
+
 		//context switch
-		portEND_SWITCHING_ISR( uart_tx_handler );
+		portEND_SWITCHING_ISR( uart_rx_handler );
 	}
 }
 
@@ -210,6 +215,10 @@ void _uart_receive(int length, QueueHandle_t* queue)
 		printf("Warning - truncating received bytes to %i bytes\n",UART_RECV_LENGTH);
 #endif
 	}
+
+#if UART_DEBUG
+	printf("Receive buffer length set to %d, index is %d\n",recv_buffer_length,recv_buffer_index);
+#endif
 }
 
 // Receive handler, loads next character into receive buffer,
@@ -218,29 +227,36 @@ void uart_rx_handler()
 {
 	while(1)
 	{
-		xSemaphoreTake(rxHandleSem,portMAX_DELAY);
-		recv_buffer[recv_buffer_index] = LPC_UART2->RBR;
+		if( pdFAIL == xSemaphoreTake(rxHandleSem,portMAX_DELAY) )
+		{
+#if UART_DEBUG
+			printf("xSemaphoreTake failed!\n");
+#endif
+		}
+
+		//recv_buffer[recv_buffer_index] = LPC_UART2->RBR;
 		recv_buffer_index++;
 
 		//if this was the last character we were expecting
-		if( recv_buffer_index == recv_buffer_length )
+		if( recv_buffer_index >= recv_buffer_length )
 		{
 			//don't send to the queue if the queue doesn't exist
 			if( recv_queue != NULL )
 			{
-#if 0
-#warning THIS IS INCORRECT
-xQueueSend needs a pointer to a memory location that has the same sie and type
-as the queue create...  This code as is will fail in novel ways.
 				//send the character to inform the IO layer that
 				//a series of letters is incoming
-				xQueueSend(recv_queue,'+',0);
+#if UART_DEBUG
+				printf("xQueueSend - Sending char %c\n",autodial_char);
+#endif
+				xQueueSend(*recv_queue,&autodial_char,0);
 				for(int i = 0; i < recv_buffer_index; i++ )
 				{
-					//send to provided queue - verify that this would work
-					xQueueSend(recv_queue,recv_buffer[i],0);
-				}
+#if UART_DEBUG
+					printf("xQueueSend - Sending char %c\n",recv_buffer[i]);
 #endif
+					//send to provided queue - verify that this would work
+					xQueueSend(*recv_queue,&recv_buffer[i],0);
+				}
 			}
 			else
 			{
@@ -249,8 +265,6 @@ as the queue create...  This code as is will fail in novel ways.
 #endif
 			}
 			recv_buffer_index = 0;
-			recv_buffer_length = 1;
-			recv_queue = NULL;
 		}
 	}
 }

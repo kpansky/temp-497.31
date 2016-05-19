@@ -64,6 +64,7 @@ void vDTMFDetectTask( void *pvParameters ) {
 			{
 				sprintf(output,"Detected code %c\r\n",r.code);
 				uart_send_noblock(output,strlen(output));
+				printf("Detected code %c\n",r.code);
 			}
 		}
 	}

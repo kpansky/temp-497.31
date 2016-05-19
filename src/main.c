@@ -75,7 +75,7 @@ int main( void )
 					  "ToneGenerator",          /* Text name for the task.  This is to facilitate debugging only. */
 					  240,                      /* Stack depth in words. */
 					  NULL,                     /* No input data */
-					  1,                        /* This task will run at priority 1. */
+					  configMAX_PRIORITIES-2,                        /* This task will run at priority 1. */
 					  NULL );                   /* We are not using the task handle. */
 
 	  #ifdef TONEGEN_INPUT_UNIT_TEST
@@ -131,8 +131,8 @@ int main( void )
 
 
 		/* Create four instances of the task that will write to the queue */
-		xTaskCreate( gpioInterfaceTask, "Keypad_Task", 240, &xIoQueue, 1, NULL);
-		xTaskCreate( vIoRxTask, "IO_Receiver", 240, NULL, 1, NULL );
+		xTaskCreate( gpioInterfaceTask, "Keypad_Task", 240, &xIoQueue, configMAX_PRIORITIES-1, NULL);
+		xTaskCreate( vIoRxTask, "IO_Receiver", 240, NULL, configMAX_PRIORITIES-1, NULL );
 
 		/* Start the scheduler so our tasks start executing. */
 		vTaskStartScheduler();

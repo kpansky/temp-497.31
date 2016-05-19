@@ -29,7 +29,7 @@
 #define PRESSED_SUPPRESS 2
 #define PRESSED 1
 #define DEPRESSED 0
-#define DEBOUNCE_TIME 100
+#define DEBOUNCE_TIME 10
 static LPC_GPIO_TypeDef (* const LPC_GPIO[5]) =
 {
 LPC_GPIO0,
@@ -325,6 +325,7 @@ void gpioInterfaceTask(void *pvParameters)
       // Also clear interrupts which were set previously
       LPC_GPIOINT->IO2IntClr |= (1 << inputpin);
     }
+    NVIC_ClearPendingIRQ( EINT3_IRQn);
     // Reenable IRQ
     NVIC_EnableIRQ(EINT3_IRQn);
 	taskYIELD();

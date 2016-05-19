@@ -365,8 +365,8 @@ void dtmfGen(char btn, circular_buffer *cb)
   // keep filling buffer until end
   for(i=0; i<cb->capacity; i++)
   {
-    value = (uint16_t)(offset + sin_aft(amp, 100, t));
-    //value = (uint16_t)(offset + sin_aft(amp, freqA, t)+ sin_aft(amp, freqB, t));
+    //value = (uint16_t)(offset + sin_aft(amp, 100, t));
+    value = (uint16_t)(offset + sin_aft(amp, freqA, t)+ sin_aft(amp, freqB, t));
     sample.Value = value;
     cb_push_back(&sample, cb);
     t++;
